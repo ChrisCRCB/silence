@@ -107,55 +107,44 @@ class MainScreenState extends ConsumerState<MainScreen> {
               TextField(
                 autofocus: true,
                 controller: controller,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   filled: true,
                   fillColor: Colors.yellow,
-                  labelStyle: TextStyle(
+                  labelStyle: const TextStyle(
                     color: Colors.black,
                     fontWeight: FontWeight.bold,
                   ),
-                  border: OutlineInputBorder(
+                  border: const OutlineInputBorder(
                     borderRadius: BorderRadius.all(Radius.circular(10.0)),
                     borderSide: BorderSide(
                       width: 2.0,
                     ),
                   ),
-                  focusedBorder: OutlineInputBorder(
+                  focusedBorder: const OutlineInputBorder(
                     borderRadius: BorderRadius.all(Radius.circular(10.0)),
                     borderSide: BorderSide(
                       color: Colors.blue,
                       width: 3.0,
                     ),
                   ),
-                  contentPadding: EdgeInsets.symmetric(
+                  contentPadding: const EdgeInsets.symmetric(
                     vertical: 15.0,
                     horizontal: 20.0,
                   ),
                   helperText: 'Enter text to speak and press enter.',
-                  helperStyle: TextStyle(
+                  helperStyle: const TextStyle(
                     color: Colors.black,
                     fontSize: 16.0,
                   ),
+                  suffix: IconButton(
+                    onPressed: speakText,
+                    icon: const Icon(
+                      Icons.send_outlined,
+                      semanticLabel: 'Send',
+                    ),
+                  ),
                 ),
-                onSubmitted: (final value) {
-                  if (value.trim().isEmpty) {
-                    return;
-                  }
-                  controller.text = '';
-                  tts.speakInterrupted(value);
-                  for (final sentence in sentences) {
-                    if (sentence.text == value) {
-                      sentence.count++;
-                      ref.saveSentences(
-                        Sentences(sentences),
-                      );
-                      return;
-                    }
-                  }
-                  final sentence = Sentence(text: value, count: 1);
-                  sentences.add(sentence);
-                  ref.saveSentences(Sentences(sentences));
-                },
+                onSubmitted: (final _) => speakText(),
                 style: const TextStyle(
                   fontSize: fontSize,
                   color: Colors.black,
@@ -168,5 +157,30 @@ class MainScreenState extends ConsumerState<MainScreen> {
         loading: LoadingWidget.new,
       ),
     );
+  }
+
+  /// Speak text.
+  Future<void> speakText() async {
+    final text = controller.text;
+    if (text.trim().isEmpty) {
+      return;
+    }
+    final tts = ref.read(flutterTtsProvider);
+    controller.text = '';
+    await tts.speakInterrupted(text);
+    final sentences =
+        (await ref.read(sentencesContextProvider.future)).sentences;
+    for (final sentence in sentences) {
+      if (sentence.text == text) {
+        sentence.count++;
+        await ref.saveSentences(
+          Sentences(sentences),
+        );
+        return;
+      }
+    }
+    final sentence = Sentence(text: text, count: 1);
+    sentences.add(sentence);
+    await ref.saveSentences(Sentences(sentences));
   }
 }
