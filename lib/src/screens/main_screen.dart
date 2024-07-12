@@ -107,7 +107,36 @@ class MainScreenState extends ConsumerState<MainScreen> {
               TextField(
                 autofocus: true,
                 controller: controller,
-                decoration: const InputDecoration(labelText: 'Speak something'),
+                decoration: const InputDecoration(
+                  filled: true,
+                  fillColor: Colors.yellow,
+                  labelStyle: TextStyle(
+                    color: Colors.black,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.all(Radius.circular(10.0)),
+                    borderSide: BorderSide(
+                      width: 2.0,
+                    ),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.all(Radius.circular(10.0)),
+                    borderSide: BorderSide(
+                      color: Colors.blue,
+                      width: 3.0,
+                    ),
+                  ),
+                  contentPadding: EdgeInsets.symmetric(
+                    vertical: 15.0,
+                    horizontal: 20.0,
+                  ),
+                  helperText: 'Enter text to speak and press enter.',
+                  helperStyle: TextStyle(
+                    color: Colors.black,
+                    fontSize: 16.0,
+                  ),
+                ),
                 onSubmitted: (final value) {
                   if (value.trim().isEmpty) {
                     return;
@@ -127,6 +156,10 @@ class MainScreenState extends ConsumerState<MainScreen> {
                   sentences.add(sentence);
                   ref.saveSentences(Sentences(sentences));
                 },
+                style: const TextStyle(
+                  fontSize: fontSize,
+                  color: Colors.black,
+                ),
               ),
             ],
           );
