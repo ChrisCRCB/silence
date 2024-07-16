@@ -2,6 +2,7 @@ import 'package:backstreets_widgets/screens.dart';
 import 'package:backstreets_widgets/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_tts/flutter_tts.dart';
 
 import '../extensions.dart';
 import '../json/sentence.dart';
@@ -22,14 +23,22 @@ class MainScreen extends ConsumerStatefulWidget {
 
 /// State for [MainScreen].
 class MainScreenState extends ConsumerState<MainScreen> {
+  /// The form key to use.
+  late final GlobalKey<FormState> formKey;
+
   /// The controller to use.
   late final TextEditingController controller;
+
+  /// The TTS system to use.
+  late final FlutterTts tts;
 
   /// Initialise state.
   @override
   void initState() {
     super.initState();
+    formKey = GlobalKey();
     controller = TextEditingController();
+    tts = FlutterTts();
   }
 
   /// Dispose of the widget.
@@ -37,12 +46,12 @@ class MainScreenState extends ConsumerState<MainScreen> {
   void dispose() {
     super.dispose();
     controller.dispose();
+    tts.stop();
   }
 
   /// Build a widget.
   @override
   Widget build(final BuildContext context) {
-    final tts = ref.watch(flutterTtsProvider);
     final value = ref.watch(sentencesContextProvider);
     const fontSize = 24.0;
     return SimpleScaffold(
@@ -93,7 +102,7 @@ class MainScreenState extends ConsumerState<MainScreen> {
                               },
                               onTap: () {
                                 sentence.count++;
-                                tts.speakInterrupted(sentence.text);
+                                speak(sentence.text);
                                 ref.saveSentences(
                                   Sentences(sentences),
                                 );
@@ -104,50 +113,53 @@ class MainScreenState extends ConsumerState<MainScreen> {
                         itemCount: sentences.length,
                       ),
               ),
-              TextField(
-                autofocus: true,
-                controller: controller,
-                decoration: InputDecoration(
-                  filled: true,
-                  fillColor: Colors.yellow,
-                  labelStyle: const TextStyle(
+              Form(
+                key: formKey,
+                child: TextFormField(
+                  autofocus: true,
+                  controller: controller,
+                  decoration: InputDecoration(
+                    filled: true,
+                    fillColor: Colors.yellow,
+                    labelStyle: const TextStyle(
+                      color: Colors.black,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    border: const OutlineInputBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(10.0)),
+                      borderSide: BorderSide(
+                        width: 2.0,
+                      ),
+                    ),
+                    focusedBorder: const OutlineInputBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(10.0)),
+                      borderSide: BorderSide(
+                        color: Colors.blue,
+                        width: 3.0,
+                      ),
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(
+                      vertical: 15.0,
+                      horizontal: 20.0,
+                    ),
+                    helperText: 'Enter text to speak and press enter.',
+                    helperStyle: const TextStyle(
+                      color: Colors.black,
+                      fontSize: 16.0,
+                    ),
+                    suffix: IconButton(
+                      onPressed: speakText,
+                      icon: const Icon(
+                        Icons.send_outlined,
+                        semanticLabel: 'Send',
+                      ),
+                    ),
+                  ),
+                  onFieldSubmitted: (final _) => speakText(),
+                  style: const TextStyle(
+                    fontSize: fontSize,
                     color: Colors.black,
-                    fontWeight: FontWeight.bold,
                   ),
-                  border: const OutlineInputBorder(
-                    borderRadius: BorderRadius.all(Radius.circular(10.0)),
-                    borderSide: BorderSide(
-                      width: 2.0,
-                    ),
-                  ),
-                  focusedBorder: const OutlineInputBorder(
-                    borderRadius: BorderRadius.all(Radius.circular(10.0)),
-                    borderSide: BorderSide(
-                      color: Colors.blue,
-                      width: 3.0,
-                    ),
-                  ),
-                  contentPadding: const EdgeInsets.symmetric(
-                    vertical: 15.0,
-                    horizontal: 20.0,
-                  ),
-                  helperText: 'Enter text to speak and press enter.',
-                  helperStyle: const TextStyle(
-                    color: Colors.black,
-                    fontSize: 16.0,
-                  ),
-                  suffix: IconButton(
-                    onPressed: speakText,
-                    icon: const Icon(
-                      Icons.send_outlined,
-                      semanticLabel: 'Send',
-                    ),
-                  ),
-                ),
-                onSubmitted: (final _) => speakText(),
-                style: const TextStyle(
-                  fontSize: fontSize,
-                  color: Colors.black,
                 ),
               ),
             ],
@@ -159,15 +171,20 @@ class MainScreenState extends ConsumerState<MainScreen> {
     );
   }
 
+  /// Speak interrupted.
+  Future<void> speak(final String text) async {
+    await tts.stop();
+    await tts.speak(text);
+  }
+
   /// Speak text.
   Future<void> speakText() async {
     final text = controller.text;
     if (text.trim().isEmpty) {
       return;
     }
-    final tts = ref.read(flutterTtsProvider);
     controller.text = '';
-    await tts.speakInterrupted(text);
+    await speak(text);
     final sentences =
         (await ref.read(sentencesContextProvider.future)).sentences;
     for (final sentence in sentences) {

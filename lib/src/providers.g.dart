@@ -41,21 +41,5 @@ final sentencesContextProvider = AutoDisposeFutureProvider<Sentences>.internal(
 );
 
 typedef SentencesContextRef = AutoDisposeFutureProviderRef<Sentences>;
-String _$flutterTtsHash() => r'e547e1976073eeb2c2df0bf460bf76d4b95e5ef7';
-
-/// Provide the text to speech system.
-///
-/// Copied from [flutterTts].
-@ProviderFor(flutterTts)
-final flutterTtsProvider = AutoDisposeProvider<FlutterTts>.internal(
-  flutterTts,
-  name: r'flutterTtsProvider',
-  debugGetCreateSourceHash:
-      const bool.fromEnvironment('dart.vm.product') ? null : _$flutterTtsHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
-
-typedef FlutterTtsRef = AutoDisposeProviderRef<FlutterTts>;
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member

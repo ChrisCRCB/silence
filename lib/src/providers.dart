@@ -1,6 +1,5 @@
 import 'dart:convert';
 
-import 'package:flutter_tts/flutter_tts.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -27,7 +26,3 @@ Future<Sentences> sentencesContext(final SentencesContextRef ref) async {
   }
   return Sentences.fromJson(jsonDecode(source));
 }
-
-/// Provide the text to speech system.
-@riverpod
-FlutterTts flutterTts(final FlutterTtsRef ref) => FlutterTts();
