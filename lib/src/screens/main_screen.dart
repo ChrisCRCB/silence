@@ -1,3 +1,4 @@
+import 'package:backstreets_widgets/extensions.dart';
 import 'package:backstreets_widgets/screens.dart';
 import 'package:backstreets_widgets/widgets.dart';
 import 'package:flutter/material.dart';
@@ -8,6 +9,7 @@ import '../extensions.dart';
 import '../json/sentence.dart';
 import '../json/sentences.dart';
 import '../providers.dart';
+import 'voices_screen.dart';
 
 /// The main screen for the application.
 class MainScreen extends ConsumerStatefulWidget {
@@ -56,6 +58,19 @@ class MainScreenState extends ConsumerState<MainScreen> {
     const fontSize = 24.0;
     return SimpleScaffold(
       title: 'Silence',
+      actions: [
+        ElevatedButton(
+          onPressed: () => context.pushWidgetBuilder(
+            (final _) => VoicesScreen(
+              tts: tts,
+            ),
+          ),
+          child: const Icon(
+            Icons.speaker_group_outlined,
+            semanticLabel: 'Select voice',
+          ),
+        ),
+      ],
       body: value.when(
         data: (final sentencesObject) {
           final sentences = sentencesObject.sentences
